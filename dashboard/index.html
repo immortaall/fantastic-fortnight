@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard — MRP Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0b0d;
+    --bg2: #111318;
+    --bg3: #181c22;
+    --bg4: #1e242d;
+    --border: #252c38;
+    --border2: #2d3748;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --accent-dim: rgba(99,102,241,0.12);
+    --green: #10b981;
+    --green-dim: rgba(16,185,129,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --yellow: #f59e0b;
+    --yellow-dim: rgba(245,158,11,0.12);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.12);
+    --radius: 6px;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%}
+  body{
+    font-family:var(--font-sans);
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    font-size:14px;
+  }
+  /* SIDEBAR */
+  #sidebar{
+    width:220px;
+    min-width:220px;
+    background:var(--bg2);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .sidebar-logo{
+    padding:20px 16px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .logo-icon{
+    width:32px;height:32px;
+    background:var(--accent);
+    border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:13px;
+    color:#fff;
+    flex-shrink:0;
+  }
+  .logo-text{font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text)}
+  .logo-sub{font-size:10px;color:var(--text3);font-family:var(--font-mono)}
+  .sidebar-status{
+    padding:10px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;font-family:var(--font-mono);
+    color:var(--text3);
+  }
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
+  .status-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .status-dot.connecting{background:var(--yellow);animation:pulse-dot 1s infinite}
+  @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+  .sidebar-nav{flex:1;overflow-y:auto;padding:8px 0}
+  .nav-section{padding:12px 16px 4px;font-size:9px;font-family:var(--font-mono);color:var(--text3);letter-spacing:.12em;text-transform:uppercase}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 16px;
+    cursor:pointer;
+    color:var(--text2);
+    font-size:13px;
+    position:relative;
+    transition:color .15s,background .15s;
+    border-left:2px solid transparent;
+  }
+  .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+  .nav-item.active{color:var(--accent2);background:var(--accent-dim);border-left-color:var(--accent)}
+  .nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+  .nav-item.active svg{opacity:1}
+  .nav-badge{
+    margin-left:auto;
+    background:var(--red);
+    color:#fff;
+    font-size:9px;
+    font-family:var(--font-mono);
+    padding:1px 5px;
+    border-radius:10px;
+    font-weight:600;
+  }
+  .sidebar-footer{
+    padding:12px 16px;
+    border-top:1px solid var(--border);
+    font-size:11px;
+    font-family:var(--font-mono);
+    color:var(--text3);
+  }
+  /* MAIN */
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  #topbar{
+    height:48px;
+    background:var(--bg2);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;
+    padding:0 20px;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .breadcrumb{font-size:12px;font-family:var(--font-mono);color:var(--text3);display:flex;align-items:center;gap:6px}
+  .breadcrumb span{color:var(--text2)}
+  .breadcrumb .sep{color:var(--border2)}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;
+    border-radius:var(--radius);
+    font-size:12px;
+    font-family:var(--font-mono);
+    font-weight:500;
+    cursor:pointer;
+    border:none;
+    transition:all .15s;
+    white-space:nowrap;
+  }
+  .btn svg{width:13px;height:13px}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+  .btn-secondary:hover{background:var(--bg3);color:var(--text)}
+  .btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+  .btn-danger:hover{background:rgba(239,68,68,.2)}
+  .btn-ghost{background:transparent;color:var(--text3);border:1px solid var(--border)}
+  .btn-ghost:hover{color:var(--text2);border-color:var(--border2)}
+  .btn-sm{padding:4px 8px;font-size:11px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  #content{flex:1;overflow-y:auto;padding:20px}
+  /* SCREENS */
+  .screen{display:none}
+  .screen.active{display:block}
+  /* CARDS */
+  .cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .card{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    cursor:pointer;
+    transition:border-color .15s,background .15s;
+  }
+  .card:hover{border-color:var(--border2);background:var(--bg3)}
+  .card-label{font-size:10px;font-family:var(--font-mono);color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+  .card-value{font-size:28px;font-family:var(--font-mono);font-weight:700;color:var(--text);margin-bottom:4px;line-height:1}
+  .card-sub{font-size:11px;color:var(--text3)}
+  .card-icon{float:right;width:32px;height:32px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-top:-2px}
+  .card-icon svg{width:16px;height:16px}
+  .card-icon.red{background:var(--red-dim);color:var(--red)}
+  .card-icon.green{background:var(--green-dim);color:var(--green)}
+  .card-icon.blue{background:var(--blue-dim);color:var(--blue)}
+  .card-icon.yellow{background:var(--yellow-dim);color:var(--yellow)}
+  /* TABLE */
+  .table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .table-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+  .table-title{font-size:12px;font-family:var(--font-mono);font-weight:600;color:var(--text)}
+  .table-title-sub{font-size:11px;color:var(--text3);margin-left:4px}
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    padding:9px 14px;
+    text-align:left;
+    font-size:10px;
+    font-family:var(--font-mono);
+    color:var(--text3);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    border-bottom:1px solid var(--border);
+    background:var(--bg3);
+    font-weight:500;
+  }
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--bg3)}
+  tbody td{padding:10px 14px;font-size:12px;color:var(--text2);font-family:var(--font-mono)}
+  tbody td.main{color:var(--text);font-weight:500}
+  /* BADGES */
+  .badge{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:2px 7px;border-radius:10px;
+    font-size:10px;font-family:var(--font-mono);font-weight:500;
+  }
+  .badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+  .badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+  .badge-yellow{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+  .badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+  .badge-gray{background:rgba(100,116,139,.1);color:var(--text3);border:1px solid var(--border)}
+  /* EMPTY STATE */
+  .empty{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--text3);
+  }
+  .empty svg{width:40px;height:40px;margin:0 auto 12px;opacity:.3;display:block}
+  .empty-title{font-size:13px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)}
+  .empty-sub{font-size:12px;line-height:1.6;max-width:320px;margin:0 auto 16px}
+  /* SKELETON */
+  .skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:skel-anim 1.4s infinite;border-radius:4px;height:12px}
+  @keyframes skel-anim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  /* TOAST */
+  #toast-container{
+    position:fixed;bottom:20px;right:20px;
+    display:flex;flex-direction:column;gap:8px;
+    z-index:9999;
+    pointer-events:none;
+  }
+  .toast{
+    padding:10px 14px;
+    border-radius:var(--radius);
+    font-size:12px;
+    font-family:var(--font-mono);
+    min-width:220px;
+    max-width:360px;
+    border:1px solid;
+    display:flex;align-items:center;gap:8px;
+    pointer-events:all;
+    animation:toast-in .2s ease;
+    transition:opacity .3s;
+  }
+  @keyframes toast-in{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+  .toast.success{background:var(--green-dim);border-color:rgba(16,185,129,.3);color:var(--green)}
+  .toast.error{background:var(--red-dim);border-color:rgba(239,68,68,.3);color:var(--red)}
+  .toast.info{background:var(--blue-dim);border-color:rgba(59,130,246,.3);color:var(--blue)}
+  .toast-close{margin-left:auto;cursor:pointer;opacity:.7;font-size:14px}
+  /* MODAL */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.7);
+    display:flex;align-items:center;justify-content:center;
+    z-index:1000;
+    backdrop-filter:blur(2px);
+  }
+  .modal{
+    background:var(--bg2);
+    border:1px solid var(--border2);
+    border-radius:var(--radius);
+    padding:24px;
+    width:480px;
+    max-width:92vw;
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .modal-title{font-size:14px;font-family:var(--font-mono);font-weight:600;color:var(--text);margin-bottom:4px}
+  .modal-sub{font-size:12px;color:var(--text3);margin-bottom:20px}
+  .modal-danger .modal-title{color:var(--red)}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+  /* FORM */
+  .form-group{margin-bottom:14px}
+  .form-label{font-size:11px;font-family:var(--font-mono);color:var(--text2);margin-bottom:5px;display:block}
+  .form-input{
+    width:100%;
+    padding:8px 10px;
+    background:var(--bg3);
+    border:1px solid var(--border2);
+    border-radius:var(--radius);
+    color:var(--text);
+    font-size:12px;
+    font-family:var(--font-mono);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .form-input:focus{border-color:var(--accent)}
+  .form-select{
+    width:100%;
+    padding:8px 10px;
+    background:var(--bg3);
+    border:1px solid var(--border2);
+    border-radius:var(--radius);
+    color:var(--text);
+    font-size:12px;
+    font-family:var(--font-mono);
+    outline:none;
+    appearance:none;
+  }
+  .form-textarea{resize:vertical;min-height:80px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* TOGGLE */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+  .toggle-row:last-child{border-bottom:none}
+  .toggle-label{font-size:12px;color:var(--text2)}
+  .toggle-sub{font-size:11px;color:var(--text3);margin-top:2px}
+  .toggle{
+    width:36px;height:20px;
+    background:var(--border2);
+    border-radius:10px;
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+    transition:background .2s;
+  }
+  .toggle::after{
+    content:'';
+    position:absolute;top:3px;left:3px;
+    width:14px;height:14px;
+    background:#fff;
+    border-radius:50%;
+    transition:transform .2s;
+  }
+  .toggle.on{background:var(--accent)}
+  .toggle.on::after{transform:translateX(16px)}
+  /* DRAWER */
+  .drawer-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:900;
+  }
+  .drawer{
+    position:fixed;top:0;right:0;bottom:0;
+    width:480px;
+    background:var(--bg2);
+    border-left:1px solid var(--border2);
+    z-index:901;
+    overflow-y:auto;
+    padding:20px;
+    transform:translateX(100%);
+    transition:transform .25s ease;
+  }
+  .drawer.open{transform:none}
+  .drawer-title{font-size:14px;font-family:var(--font-mono);font-weight:600;margin-bottom:4px}
+  .drawer-close{
+    float:right;cursor:pointer;
+    font-size:18px;color:var(--text3);
+    margin-top:-2px;
+    background:none;border:none;color:var(--text3);
+  }
+  .drawer-close:hover{color:var(--text)}
+  /* QR CODE AREA */
+  .qr-wrap{
+    background:var(--bg3);
+    border:1px solid var(--border2);
+    border-radius:var(--radius);
+    padding:20px;
+    text-align:center;
+  }
+  .qr-img{
+    width:200px;height:200px;
+    background:white;
+    margin:0 auto 12px;
+    border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .qr-img img{width:100%;height:100%;object-fit:contain}
+  .qr-countdown{
+    font-size:11px;font-family:var(--font-mono);
+    color:var(--text3);
+  }
+  .qr-countdown span{color:var(--yellow)}
+  /* WHATSAPP SIM */
+  .wa-container{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    display:flex;
+    height:calc(100vh - 180px);
+    overflow:hidden;
+  }
+  .wa-left{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+  .wa-right{
+    width:320px;
+    background:var(--bg3);
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:#22c55e;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .wa-header{
+    padding:10px 14px;
+    background:var(--bg3);
+    border-bottom:1px solid var(--border);
+    font-size:11px;font-family:var(--font-mono);color:var(--text3);
+    display:flex;align-items:center;gap:6px;
+  }
+  .wa-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .wa-bubble{
+    max-width:75%;
+    padding:8px 12px;
+    border-radius:var(--radius);
+    font-size:12px;
+    line-height:1.5;
+  }
+  .wa-bubble.user{
+    background:var(--accent-dim);
+    border:1px solid rgba(99,102,241,.2);
+    color:var(--text);
+    align-self:flex-end;
+    font-family:var(--font-mono);
+  }
+  .wa-bubble.bot{
+    background:var(--bg4);
+    border:1px solid var(--border2);
+    color:var(--text2);
+    align-self:flex-start;
+    font-family:var(--font-mono);
+    white-space:pre-wrap;
+  }
+  .wa-time{font-size:9px;color:var(--text3);margin-top:3px;text-align:right}
+  .wa-input-area{
+    padding:10px 14px;
+    border-top:1px solid var(--border);
+    display:flex;gap:8px;
+  }
+  .wa-suggestions{
+    padding:0 14px 10px;
+    display:flex;flex-wrap:wrap;gap:6px;
+  }
+  .wa-sug{
+    background:var(--bg4);
+    border:1px solid var(--border2);
+    border-radius:10px;
+    padding:3px 10px;
+    font-size:11px;font-family:var(--font-mono);
+    color:var(--text3);cursor:pointer;
+    transition:all .15s;
+  }
+  .wa-sug:hover{color:var(--text2);border-color:var(--accent)}
+  .wa-badge-test{
+    margin:4px 14px 0;
+    background:var(--yellow-dim);
+    border:1px solid rgba(245,158,11,.2);
+    border-radius:var(--radius);
+    padding:4px 10px;
+    font-size:10px;font-family:var(--font-mono);
+    color:var(--yellow);
+    text-align:center;
+  }
+  .console-header{
+    padding:8px 12px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:10px;color:rgba(34,197,94,.5);
+  }
+  .console-body{flex:1;overflow-y:auto;padding:8px 12px;font-size:11px;line-height:1.7}
+  .console-line{opacity:.85}
+  .console-line .ts{color:rgba(34,197,94,.5)}
+  .console-line .type{color:#60a5fa}
+  /* UPLOAD AREA */
+  .upload-area{
+    border:2px dashed var(--border2);
+    border-radius:var(--radius);
+    padding:40px;
+    text-align:center;
+    cursor:pointer;
+    transition:all .15s;
+    position:relative;
+  }
+  .upload-area:hover,.upload-area.drag{border-color:var(--accent);background:var(--accent-dim)}
+  .upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .upload-area svg{width:36px;height:36px;margin:0 auto 12px;display:block;color:var(--text3)}
+  .upload-area-title{font-size:13px;color:var(--text2);margin-bottom:4px}
+  .upload-area-sub{font-size:11px;color:var(--text3)}
+  /* SEARCH */
+  .search-input{
+    padding:7px 10px 7px 32px;
+    background:var(--bg3);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    color:var(--text);
+    font-size:12px;font-family:var(--font-mono);
+    outline:none;width:200px;
+    position:relative;
+  }
+  .search-wrap{position:relative;display:inline-block}
+  .search-wrap svg{
+    position:absolute;left:9px;top:50%;transform:translateY(-50%);
+    width:13px;height:13px;color:var(--text3);pointer-events:none;
+  }
+  /* SETTINGS SECTION */
+  .settings-card{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .settings-card-header{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;font-family:var(--font-mono);font-weight:600;color:var(--text);
+  }
+  .settings-card-body{padding:16px}
+  /* PROGRESS */
+  .progress-bar{background:var(--bg4);border-radius:4px;height:6px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .4s}
+  /* ALERT ITEM */
+  .alert-item{
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    display:flex;align-items:flex-start;gap:10px;
+    margin-bottom:8px;
+  }
+  .alert-icon{width:28px;height:28px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .alert-icon svg{width:14px;height:14px}
+  .alert-icon.critical{background:var(--red-dim);color:var(--red)}
+  .alert-icon.warning{background:var(--yellow-dim);color:var(--yellow)}
+  .alert-icon.info{background:var(--blue-dim);color:var(--blue)}
+  .alert-text{flex:1;font-size:12px;font-family:var(--font-mono);color:var(--text2);line-height:1.5}
+  .alert-date{font-size:10px;color:var(--text3);margin-top:2px}
+  /* SECTION TITLE */
+  .section-title{
+    font-size:11px;font-family:var(--font-mono);
+    color:var(--text3);text-transform:uppercase;letter-spacing:.1em;
+    margin-bottom:12px;margin-top:4px;
+  }
+  /* GRID 2 */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* SPINNER */
+  .spinner{
+    width:14px;height:14px;
+    border:2px solid rgba(255,255,255,.2);
+    border-top-color:currentColor;
+    border-radius:50%;
+    animation:spin .6s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* HISTORY TABLE */
+  .hist-type{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:10px;font-family:var(--font-mono);
+  }
+  /* CONNECTED BADGE */
+  .connected-badge{
+    display:flex;align-items:center;gap:8px;
+    padding:10px 14px;
+    background:var(--green-dim);
+    border:1px solid rgba(16,185,129,.2);
+    border-radius:var(--radius);
+    font-size:12px;font-family:var(--font-mono);
+    color:var(--green);
+    margin-bottom:12px;
+  }
+  /* FILTER BAR */
+  .filter-bar{
+    display:flex;gap:8px;
+    padding:10px 16px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg2);
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .filter-label{font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-right:2px}
+  /* COPY BUTTON */
+  .copy-btn{
+    cursor:pointer;
+    background:none;border:none;
+    color:var(--text3);
+    padding:0;
+  }
+  .copy-btn:hover{color:var(--text2)}
+  /* PING INDICATOR */
+  .ping-result{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-family:var(--font-mono);
+    padding:5px 10px;border-radius:var(--radius);
+  }
+  .ping-result.ok{background:var(--green-dim);color:var(--green)}
+  .ping-result.fail{background:var(--red-dim);color:var(--red)}
+  /* RESPONSIVE */
+  @media(max-width:1100px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">ZA</div>
+    <div>
+      <div class="logo-text">ZapAuto</div>
+      <div class="logo-sub">MRP Bot v1.0</div>
+    </div>
+  </div>
+  <div class="sidebar-status">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-label">Verificando...</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" data-screen="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-screen="relatorio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Relatório de Faltas
+      <span class="nav-badge" id="badge-faltas" style="display:none">0</span>
+    </div>
+    <div class="nav-section">Dados</div>
+    <div class="nav-item" data-screen="planilha">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="3"/></svg>
+      Planilha / Dados
+    </div>
+    <div class="nav-item" data-screen="historico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Histórico
+    </div>
+    <div class="nav-section">Controle</div>
+    <div class="nav-item" data-screen="numeros">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Números Autorizados
+    </div>
+    <div class="nav-item" data-screen="testar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Testar Respostas
+    </div>
+    <div class="nav-item" data-screen="alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Alertas
+    </div>
+    <div class="nav-section">Sistema</div>
+    <div class="nav-item" data-screen="config">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      Configurações
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="margin-bottom:2px">Backend: <span id="footer-url" style="color:var(--accent2)">localhost:3000</span></div>
+    <div id="footer-time" style="color:var(--text3)">—</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div class="breadcrumb" id="breadcrumb">
+      <span>MRP Bot</span>
+      <span class="sep">›</span>
+      <span id="breadcrumb-current">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="refreshCurrent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('config')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.09a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Telegram
+      </button>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="cards-grid" id="dash-cards">
+        <div class="card" onclick="showScreen('relatorio')">
+          <div class="card-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="card-label">Faltas Críticas</div>
+          <div class="card-value" id="dash-faltas">—</div>
+          <div class="card-sub" id="dash-faltas-sub">aguardando dados</div>
+        </div>
+        <div class="card" onclick="showScreen('planilha')">
+          <div class="card-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="3"/></svg></div>
+          <div class="card-label">Planilha</div>
+          <div class="card-value" id="dash-planilha">—</div>
+          <div class="card-sub" id="dash-planilha-sub">nenhum arquivo</div>
+        </div>
+        <div class="card" onclick="showScreen('config')">
+          <div class="card-icon" id="dash-bot-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.09a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="card-label">Status do Bot</div>
+          <div class="card-value" id="dash-bot">—</div>
+          <div class="card-sub" id="dash-bot-sub">desconectado</div>
+        </div>
+        <div class="card" onclick="showScreen('historico')">
+          <div class="card-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="card-label">Mensagens Hoje</div>
+          <div class="card-value" id="dash-msgs">—</div>
+          <div class="card-sub">consultas recebidas</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:12px">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Atividade Recente <span class="table-title-sub">últimas consultas</span></div>
+          </div>
+          <div id="dash-activity">
+            <div class="empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <div class="empty-title">Aguardando dados</div>
+              <div class="empty-sub">Ative o bot Telegram e carregue a planilha para começar.</div>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">Faltas Críticas <span class="table-title-sub">materiais em risco</span></div>
+          </div>
+          <div id="dash-faltas-list">
+            <div class="empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="empty-title">Nenhuma falta identificada</div>
+              <div class="empty-sub">Carregue a planilha para gerar o relatório.</div>
+              <button class="btn btn-primary btn-sm" onclick="showScreen('planilha')">Ir para Planilha</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIO -->
+    <div class="screen" id="screen-relatorio">
+      <div class="table-wrap">
+        <div class="table-header" style="flex-wrap:wrap;gap:8px">
+          <div class="table-title">Relatório de Faltas</div>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="search-input" id="relatorio-search" placeholder="Material, OP..." oninput="filterRelatorio()"/>
+            </div>
+            <select class="form-select" style="width:auto;font-size:11px;padding:5px 8px" id="filter-status" onchange="filterRelatorio()">
+              <option value="">Todos status</option>
+              <option value="critico">Crítico</option>
+              <option value="atencao">Atenção</option>
+              <option value="ok">OK</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="exportarExcel()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Excel
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="copiarRelatorio()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              WhatsApp
+            </button>
+          </div>
+        </div>
+        <div id="relatorio-content">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            <div class="empty-title">Nenhuma falta identificada</div>
+            <div class="empty-sub">Carregue a planilha em "Planilha / Dados" para gerar o relatório.</div>
+            <button class="btn btn-primary btn-sm" onclick="showScreen('planilha')">Ir para Planilha / Dados</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANILHA -->
+    <div class="screen" id="screen-planilha">
+      <div id="planilha-upload-area" style="margin-bottom:12px">
+        <div class="upload-area" id="upload-drop" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" accept=".xlsx,.xls" onchange="onFileSelect(event)" id="file-input"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="upload-area-title">Arraste o arquivo .xlsx aqui ou clique para selecionar</div>
+          <div class="upload-area-sub">Planilha SD4 — colunas B, D, F, G, H, K, N, O, P</div>
+        </div>
+        <div id="upload-progress" style="display:none;margin-top:8px">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-bottom:4px">Carregando planilha...</div>
+          <div class="progress-bar"><div class="progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div id="planilha-info" style="display:none">
+        <div class="cards-grid" style="grid-template-columns:repeat(5,1fr)">
+          <div class="card" style="cursor:default">
+            <div class="card-label">Última Carga</div>
+            <div style="font-size:14px;font-family:var(--font-mono);font-weight:600" id="pln-data">—</div>
+          </div>
+          <div class="card" style="cursor:default">
+            <div class="card-label">Materiais</div>
+            <div class="card-value" style="font-size:22px" id="pln-materiais">—</div>
+          </div>
+          <div class="card" style="cursor:default">
+            <div class="card-label">OPs</div>
+            <div class="card-value" style="font-size:22px" id="pln-ops">—</div>
+          </div>
+          <div class="card" style="cursor:default">
+            <div class="card-label">Linhas Ignoradas</div>
+            <div class="card-value" style="font-size:22px" id="pln-ignoradas">—</div>
+          </div>
+          <div class="card" style="cursor:default">
+            <div class="card-label">Faltas</div>
+            <div class="card-value" style="font-size:22px;color:var(--red)" id="pln-faltas">—</div>
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <div class="table-header" style="justify-content:space-between">
+            <div class="table-title">Preview <span class="table-title-sub">primeiras 20 linhas após filtro</span></div>
+            <button class="btn btn-secondary btn-sm" onclick="recarregarPlanilha()" id="btn-recarregar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Recarregar
+            </button>
+          </div>
+          <div id="planilha-preview">
+            <div class="empty">
+              <div class="empty-sub">Preview dos dados carregados aparece aqui</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="screen" id="screen-historico">
+      <div class="table-wrap">
+        <div class="table-header" style="justify-content:space-between">
+          <div class="table-title">Histórico de Consultas</div>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" placeholder="Código, número..." oninput="filterHistorico(this.value)"/>
+          </div>
+        </div>
+        <div id="historico-content">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="empty-title">Nenhuma consulta registrada</div>
+            <div class="empty-sub">As consultas do Telegram e manuais aparecerão aqui.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NÚMEROS -->
+    <div class="screen" id="screen-numeros">
+      <div class="table-wrap">
+        <div class="table-header" style="justify-content:space-between">
+          <div class="table-title">Números Autorizados</div>
+          <div style="display:flex;gap:8px">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="search-input" placeholder="Nome, número..." oninput="filterNumeros(this.value)"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="abrirModalNumero()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar
+            </button>
+          </div>
+        </div>
+        <div id="numeros-content">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <div class="empty-title">Nenhum número autorizado ainda</div>
+            <div class="empty-sub">Adicione números para o bot começar a responder.</div>
+            <button class="btn btn-primary btn-sm" onclick="abrirModalNumero()">+ Adicionar número</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTAR -->
+    <div class="screen" id="screen-testar">
+      <div class="wa-container">
+        <div class="wa-left">
+          <div class="wa-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--green)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Simulador Bot Telegram
+          </div>
+          <div class="wa-badge-test">⚠ MODO TESTE — não envia mensagens reais</div>
+          <div class="wa-messages" id="wa-messages">
+            <div class="wa-bubble bot">Olá! Sou o ZapAuto Bot (Telegram). Digite um código de material, OP ou !urgente para testar.</div>
+          </div>
+          <div class="wa-suggestions" id="wa-suggestions">
+            <div class="wa-sug" onclick="sendWA('50.01.0036')">50.01.0036</div>
+            <div class="wa-sug" onclick="sendWA('OP 119443')">OP 119443</div>
+            <div class="wa-sug" onclick="sendWA('!urgente')">!urgente</div>
+            <div class="wa-sug" onclick="sendWA('relatorio')">relatório</div>
+          </div>
+          <div class="wa-input-area">
+            <input type="text" class="form-input" id="wa-input" placeholder="Código de material, OP ou comando..." style="flex:1" onkeydown="if(event.key==='Enter')sendWA()"/>
+            <button class="btn btn-primary" onclick="sendWA()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="wa-right">
+          <div class="console-header">
+            <span>CONSOLE DE PROCESSAMENTO</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px" onclick="limparConsole()">Limpar</button>
+              <button class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px" onclick="copiarConsole()">Copiar</button>
+            </div>
+          </div>
+          <div class="console-body" id="console-body">
+            <div class="console-line"><span class="ts">[sistema]</span> Console pronto. Aguardando consultas...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="screen" id="screen-alertas">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:12px">
+        <div>
+          <div class="section-title">Alertas Ativos</div>
+          <div id="alertas-list">
+            <div class="empty" style="padding:30px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <div class="empty-title">Nenhum alerta ativo no momento</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">Configurar Alertas</div>
+          <div class="settings-card">
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div><div class="toggle-label">Alerta matinal automático</div><div class="toggle-sub">Envia resumo de faltas pela manhã</div></div>
+                <div class="toggle" id="t-matinal" onclick="toggleEl(this)"></div>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">PC vencido sem recebimento</div><div class="toggle-sub">Alerta quando PC passa da data</div></div>
+                <div class="toggle on" id="t-pc" onclick="toggleEl(this)"></div>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Planilha desatualizada</div><div class="toggle-sub">Alerta quando planilha está velha</div></div>
+                <div class="toggle on" id="t-plan" onclick="toggleEl(this)"></div>
+              </div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Ativar comando !urgente</div><div class="toggle-sub">Permite consulta prioritária</div></div>
+                <div class="toggle on" id="t-urgente" onclick="toggleEl(this)"></div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;margin-top:14px;justify-content:center" onclick="salvarAlertas()">Salvar configurações</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="screen" id="screen-config">
+      <!-- Backend Connection -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          Conexão com Backend
+          <span id="ping-result-badge"></span>
+        </div>
+        <div class="settings-card-body">
+          <div class="form-group">
+            <label class="form-label">URL da API</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="form-input" id="api-url-input" placeholder="http://localhost:3000"/>
+              <button class="btn btn-secondary" onclick="testarConexao()" id="btn-test-conn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg>
+                Testar
+              </button>
+              <button class="btn btn-primary" onclick="salvarUrl()">Salvar</button>
+            </div>
+          </div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3)">
+            Esta URL é salva localmente. Todas as chamadas da API usam esta base.
+          </div>
+        </div>
+      </div>
+
+      <!-- Telegram Bot -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          Bot Telegram
+          <span id="wa-status-badge"></span>
+        </div>
+        <div class="settings-card-body">
+          <div id="wa-connected-info" class="connected-badge" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="wa-number-display">Online</span>
+          </div>
+          <div id="wa-disconnected-info">
+            <span class="ping-result fail" style="font-size:11px;font-family:var(--font-mono)">● Offline / Verificando...</span>
+          </div>
+          <div style="margin-top:14px;font-size:11px;font-family:var(--font-mono);color:var(--text3);line-height:1.9">
+            Modo: <span style="color:var(--accent2)">Long Polling</span><br/>
+            Para liberar um usuário: adicione o <strong>Chat ID</strong> dele na whitelist.<br/>
+            O usuário pode obter o ID enviando <span style="color:var(--accent)">/id</span> ao bot.
+          </div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="pollStatus()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Verificar Status
+          </button>
+        </div>
+      </div>
+
+      <!-- Bot Config -->
+      <div class="settings-card">
+        <div class="settings-card-header">Configuração do Bot</div>
+        <div class="settings-card-body">
+          <div class="section-title" style="margin-top:0">Dados a exibir nas respostas</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Estoque atual</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Número do PC</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Previsão de chegada</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Fornecedor</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Lista de OPs</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Cliente da OP</label>
+            <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked/> Comparar prazo PC vs falta</label>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Máx. OPs por material</label>
+              <input type="number" class="form-input" value="10" min="1" max="50"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alertar se falta em menos de (dias)</label>
+              <input type="number" class="form-input" value="3" min="1"/>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="salvarConfig()">Salvar configurações</button>
+        </div>
+      </div>
+
+      <!-- Mensagens -->
+      <div class="settings-card">
+        <div class="settings-card-header">Mensagens Personalizadas</div>
+        <div class="settings-card-body">
+          <div class="form-group">
+            <label class="form-label">Saudação inicial</label>
+            <textarea class="form-input form-textarea" placeholder="Olá! Sou o MRP Bot..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Material não encontrado</label>
+            <textarea class="form-input form-textarea" style="min-height:60px" placeholder="Material não encontrado na planilha..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">OP não encontrada</label>
+              <textarea class="form-input form-textarea" style="min-height:60px" placeholder="OP não encontrada..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dados desatualizados</label>
+              <textarea class="form-input form-textarea" style="min-height:60px" placeholder="Atenção: planilha desatualizada..."></textarea>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="salvarMensagens()">Salvar mensagens</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- MODAL NUMERO -->
+<div class="modal-overlay" id="modal-numero" style="display:none" onclick="if(event.target===this)fecharModal('modal-numero')">
+  <div class="modal">
+    <div class="modal-title" id="modal-numero-title">Adicionar Número</div>
+    <div class="modal-sub">Configure o acesso ao bot para este contato</div>
+    <div class="form-group">
+      <label class="form-label">ID Telegram (Chat ID)</label>
+      <input type="text" class="form-input" id="numero-phone" placeholder="Ex: 123456789"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nome / Apelido</label>
+        <input type="text" class="form-input" id="numero-nome" placeholder="João da Silva"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Perfil</label>
+        <select class="form-select" id="numero-perfil">
+          <option>Comprador</option>
+          <option>PCP</option>
+          <option>Chão de Fábrica</option>
+          <option>Gerência</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Permissões</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked id="perm-material"/> Consultar material</label>
+        <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" checked id="perm-op"/> Consultar OP</label>
+        <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" id="perm-relatorio"/> Ver relatório</label>
+        <label style="display:flex;gap:8px;font-size:12px;font-family:var(--font-mono);color:var(--text2);cursor:pointer;align-items:center"><input type="checkbox" id="perm-urgente"/> Usar !urgente</label>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Receber alertas automáticos</div></div>
+      <div class="toggle on" id="t-alertas-num" onclick="toggleEl(this)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModal('modal-numero')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarNumero()" id="btn-salvar-numero">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR DELETE -->
+<div class="modal-overlay modal-danger" id="modal-delete" style="display:none" onclick="if(event.target===this)fecharModal('modal-delete')">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red)">Remover Número</div>
+    <div class="modal-sub" id="modal-delete-text">Tem certeza?</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="fecharModal('modal-delete')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarDelete()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER DETALHE -->
+<div class="drawer-overlay" id="drawer-overlay" style="display:none" onclick="fecharDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="fecharDrawer()">✕</button>
+  <div id="drawer-content"></div>
+</div>
+
+<script>
+// ===================== STATE =====================
+const state = {
+  screen: 'dashboard',
+  apiUrl: localStorage.getItem('api_url') || '',
+  numeros: [],
+  relatorio: [],
+  historico: [],
+  alertas: [],
+  dashData: null,
+  planilhaStatus: null,
+  waStatus: null,
+  deleteTarget: null,
+  qrTimer: null,
+  qrPollTimer: null,
+  statusPollTimer: null,
+  consoleLog: [],
+};
+
+// ===================== API =====================
+async function req(path, options = {}) {
+  try {
+    const res = await fetch(`${state.apiUrl}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, error: err.message || `HTTP ${res.status}` };
+    }
+    return await res.json();
+  } catch (e) {
+    return { ok: false, error: 'Sem resposta do servidor' };
+  }
+}
+
+const api = {
+  ping:               () => req('/api/ping'),
+  getStatus:          () => req('/api/status'),
+  getDashboard:       () => req('/api/dashboard'),
+  getLogs:            (p=1) => req(`/api/logs?page=${p}`),
+  getHistory:         () => req('/api/query/history'),
+  getStats:           () => req('/api/query/stats'),
+
+  getWhitelist:       () => req('/api/whitelist'),
+  addNumero:          (d) => req('/api/whitelist', {method:'POST', body:JSON.stringify(d)}),
+  editNumero:         (id, d) => req(`/api/whitelist/${id}`, {method:'PUT', body:JSON.stringify(d)}),
+  toggleNumero:       (id) => req(`/api/whitelist/${id}/toggle`, {method:'PATCH'}),
+  deleteNumero:       (id) => req(`/api/whitelist/${id}`, {method:'DELETE'}),
+  getContatos:        () => req('/api/whitelist'),
+
+  uploadPlanilha:     (form) => fetch(`${state.apiUrl}/api/spreadsheet/upload`, {method:'POST', body:form}).then(r=>r.json()).catch(()=>({ok:false,error:'Erro upload'})),
+  recarregarPlanilha: () => req('/api/planilha/recarregar', {method:'POST'}),
+  getStatusPlanilha:  () => req('/api/spreadsheet/status'),
+  getPreviewPlanilha: () => req('/api/planilha/preview'),
+
+  getRelatorio:       (p) => req(`/api/relatorio/faltas${p?'?'+new URLSearchParams(p):''}`),
+  queryOP:            (op) => req(`/api/query/op/${encodeURIComponent(op)}`),
+  queryMaterial:      (mat) => req(`/api/query/material/${encodeURIComponent(mat)}`),
+  consultar:          (texto) => req('/api/consultar', {method:'POST', body:JSON.stringify({texto})}),
+
+  getAlertas:         () => req('/api/alertas'),
+  salvarAlertas:      (d) => req('/api/alertas/config', {method:'POST', body:JSON.stringify(d)}),
+  getConfig:          () => req('/api/config'),
+  salvarConfig:       (d) => req('/api/config', {method:'PUT', body:JSON.stringify(d)}),
+
+  getTelegramStatus:  () => req('/api/telegram/status'),
+  getWAStatus:        () => req('/api/telegram/status'),
+  conectarWA:         () => Promise.resolve({ ok: true, status: 'polling' }),
+  desconectarWA:      () => Promise.resolve({ ok: true }),
+};
+
+// ===================== TOASTS =====================
+function toast(msg, type='info', duration=4000) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 300); }, duration);
+}
+
+// ===================== NAVIGATION =====================
+const screenTitles = {
+  dashboard:'Dashboard', relatorio:'Relatório de Faltas', planilha:'Planilha / Dados',
+  historico:'Histórico', numeros:'Números Autorizados', testar:'Testar Respostas',
+  alertas:'Alertas', config:'Configurações'
+};
+
+function showScreen(name) {
+  state.screen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sc = document.getElementById(`screen-${name}`);
+  if (sc) sc.classList.add('active');
+  const nav = document.querySelector(`[data-screen="${name}"]`);
+  if (nav) nav.classList.add('active');
+  document.getElementById('breadcrumb-current').textContent = screenTitles[name] || name;
+  document.title = `${screenTitles[name]} — MRP Bot`;
+  loadScreen(name);
+}
+
+document.querySelectorAll('.nav-item[data-screen]').forEach(el => {
+  el.addEventListener('click', () => showScreen(el.dataset.screen));
+});
+
+async function loadScreen(name) {
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'relatorio') loadRelatorio();
+  else if (name === 'historico') loadHistorico();
+  else if (name === 'numeros') loadNumeros();
+  else if (name === 'planilha') loadPlanilha();
+  else if (name === 'alertas') loadAlertas();
+  else if (name === 'config') loadConfigScreen();
+}
+
+function refreshCurrent() { loadScreen(state.screen); }
+
+// ===================== STATUS POLLING =====================
+async function pollStatus() {
+  const r = await api.getWAStatus();
+  const dot = document.getElementById('status-dot');
+  const label = document.getElementById('status-label');
+  const botCard = document.getElementById('dash-bot');
+  const botSub = document.getElementById('dash-bot-sub');
+  const botIcon = document.getElementById('dash-bot-icon');
+  if (r && !r.error && (r.connected || r.status === 'connected' || r.status === 'authenticated' || r.status === 'polling' || r.status === 'online')) {
+    state.waStatus = 'connected';
+    dot.className = 'status-dot online';
+    label.textContent = r.number || 'Conectado';
+    if (botCard) { botCard.textContent = 'Online'; botCard.style.color = 'var(--green)'; }
+    if (botSub) botSub.textContent = r.number || 'Telegram online';
+    if (botIcon) { botIcon.className = 'card-icon green'; }
+    document.getElementById('wa-connected-info').style.display = 'flex';
+    document.getElementById('wa-disconnected-info').style.display = 'none';
+    document.getElementById('wa-number-display').textContent = `✅ Conectado${r.number ? ' | ' + r.number : ''}`;
+  } else {
+    state.waStatus = 'disconnected';
+    dot.className = 'status-dot';
+    label.textContent = 'Desconectado';
+    if (botCard) { botCard.textContent = 'Offline'; botCard.style.color = ''; }
+    if (botSub) botSub.textContent = 'Telegram offline';
+    if (botIcon) { botIcon.className = 'card-icon red'; }
+    document.getElementById('wa-connected-info').style.display = 'none';
+    document.getElementById('wa-disconnected-info').style.display = 'block';
+  }
+  // update footer time
+  const now = new Date();
+  document.getElementById('footer-time').textContent = now.toLocaleTimeString('pt-BR');
+}
+
+function startPolling() {
+  pollStatus();
+  state.statusPollTimer = setInterval(pollStatus, 30000);
+}
+
+// ===================== DASHBOARD =====================
+async function loadDashboard() {
+  // stats
+  const stats = await api.getStats();
+  if (stats && !stats.error) {
+    const f = document.getElementById('dash-faltas');
+    const ms = document.getElementById('dash-msgs');
+    if (f) { f.textContent = stats.criticas ?? stats.totalFaltas ?? '—'; }
+    if (ms) { ms.textContent = stats.hoje ?? stats.totalConsultas ?? '—'; }
+    const bf = document.getElementById('badge-faltas');
+    if (bf && stats.criticas > 0) { bf.style.display=''; bf.textContent = stats.criticas; }
+  }
+  // planilha
+  const ps = await api.getStatusPlanilha();
+  if (ps && !ps.error && ps.loaded) {
+    const pv = document.getElementById('dash-planilha');
+    const psb = document.getElementById('dash-planilha-sub');
+    if (pv) pv.textContent = ps.materiais ?? ps.totalMateriais ?? '—';
+    if (psb) psb.textContent = ps.filename || 'carregada';
+  }
+  // history
+  const hist = await api.getHistory();
+  const actDiv = document.getElementById('dash-activity');
+  if (hist && !hist.error && hist.length > 0) {
+    actDiv.innerHTML = renderHistTable(hist.slice(0,8));
+  }
+  // relatorio
+  const rel = await api.getRelatorio();
+  const fDiv = document.getElementById('dash-faltas-list');
+  if (rel && !rel.error && rel.length > 0) {
+    fDiv.innerHTML = `<table><thead><tr><th>Material</th><th>Descrição</th><th>Falta</th><th>Status</th></tr></thead><tbody>
+    ${rel.slice(0,6).map(r=>`<tr onclick="abrirDrawerMaterial(${JSON.stringify(r).replace(/"/g,'&quot;')})">
+      <td class="main">${r.material||r.codigo||'—'}</td>
+      <td>${truncate(r.descricao||'—',30)}</td>
+      <td style="color:var(--red)">${r.falta||r.qtdFalta||'—'}</td>
+      <td>${badgeStatus(r.status||r.criticidade)}</td>
+    </tr>`).join('')}</tbody></table>`;
+  }
+}
+
+// ===================== RELATORIO =====================
+let relatorioData = [];
+async function loadRelatorio() {
+  const div = document.getElementById('relatorio-content');
+  div.innerHTML = skelTable(5);
+  const r = await api.getRelatorio();
+  if (r && !r.error && r.length > 0) {
+    relatorioData = r;
+    renderRelatorio(r);
+  } else if (r && r.length === 0) {
+    relatorioData = [];
+    div.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+      <div class="empty-title">Nenhuma falta identificada</div>
+      <div class="empty-sub">Carregue a planilha para gerar o relatório.</div>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('planilha')">Ir para Planilha / Dados</button>
+    </div>`;
+  } else {
+    div.innerHTML = errTable('Erro ao carregar relatório', loadRelatorio);
+  }
+}
+
+function renderRelatorio(data) {
+  const div = document.getElementById('relatorio-content');
+  div.innerHTML = `<table><thead><tr>
+    <th>Material</th><th>Descrição</th><th>OP Crítica</th><th>Falta (un)</th><th>Estoque</th><th>Previsão</th><th>Status</th><th></th>
+  </tr></thead><tbody>
+  ${data.map(r=>`<tr>
+    <td class="main">${r.material||r.codigo||'—'}</td>
+    <td title="${r.descricao||''}" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${truncate(r.descricao||'—',28)}</td>
+    <td><span class="badge badge-red" style="cursor:pointer" onclick="abrirDrawerOP('${r.opCritica||r.op||''}')">${r.opCritica||r.op||'—'}</span></td>
+    <td style="color:var(--red);font-weight:600">${r.falta||r.qtdFalta||'—'}</td>
+    <td>${r.estoque??r.saldoAtual??'—'}</td>
+    <td>${r.previsao||r.dataChegada||'—'}</td>
+    <td>${badgeStatus(r.status||r.criticidade)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="abrirDrawerMaterial(${JSON.stringify(r).replace(/"/g,'&quot;')})">Ver</button></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function filterRelatorio() {
+  const q = document.getElementById('relatorio-search').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  let data = relatorioData.filter(r => {
+    const match = !q || (r.material||'').toLowerCase().includes(q) || (r.descricao||'').toLowerCase().includes(q) || (r.op||'').toLowerCase().includes(q);
+    const statusMatch = !s || (r.status||r.criticidade||'').toLowerCase().includes(s);
+    return match && statusMatch;
+  });
+  if (data.length > 0) renderRelatorio(data);
+}
+
+// ===================== PLANILHA =====================
+async function loadPlanilha() {
+  const r = await api.getStatusPlanilha();
+  if (r && !r.error && r.loaded) {
+    showPlanilhaInfo(r);
+    loadPreview();
+  }
+}
+
+function showPlanilhaInfo(r) {
+  document.getElementById('planilha-info').style.display = 'block';
+  document.getElementById('pln-data').textContent = r.uploadedAt ? new Date(r.uploadedAt).toLocaleString('pt-BR') : '—';
+  document.getElementById('pln-materiais').textContent = r.materiais ?? r.totalMateriais ?? '—';
+  document.getElementById('pln-ops').textContent = r.ops ?? r.totalOPs ?? '—';
+  document.getElementById('pln-ignoradas').textContent = r.ignoradas ?? '—';
+  document.getElementById('pln-faltas').textContent = r.faltas ?? r.totalFaltas ?? '—';
+}
+
+async function loadPreview() {
+  const r = await api.getPreviewPlanilha();
+  const div = document.getElementById('planilha-preview');
+  if (r && !r.error && r.rows && r.rows.length > 0) {
+    const cols = Object.keys(r.rows[0]);
+    div.innerHTML = `<div style="overflow-x:auto"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>
+    ${r.rows.map(row=>`<tr>${cols.map(c=>`<td>${row[c]??'—'}</td>`).join('')}</tr>`).join('')}
+    </tbody></table></div>`;
+  }
+}
+
+function onDragOver(e) { e.preventDefault(); document.getElementById('upload-drop').classList.add('drag'); }
+function onDragLeave() { document.getElementById('upload-drop').classList.remove('drag'); }
+function onDrop(e) { e.preventDefault(); onDragLeave(); uploadFile(e.dataTransfer.files[0]); }
+function onFileSelect(e) { uploadFile(e.target.files[0]); }
+
+async function uploadFile(file) {
+  if (!file) return;
+  const prog = document.getElementById('upload-progress');
+  const fill = document.getElementById('upload-progress-fill');
+  prog.style.display = 'block';
+  // simulate progress
+  let p = 0;
+  const interval = setInterval(() => { p = Math.min(p + 10, 90); fill.style.width = p + '%'; }, 100);
+  const form = new FormData();
+  form.append('file', file);
+  form.append('spreadsheet', file);
+  const r = await api.uploadPlanilha(form);
+  clearInterval(interval);
+  fill.style.width = '100%';
+  setTimeout(() => { prog.style.display = 'none'; fill.style.width = '0%'; }, 800);
+  if (r && !r.error) {
+    toast('Planilha carregada com sucesso!', 'success');
+    loadPlanilha();
+  } else {
+    toast(r?.error || 'Erro ao carregar planilha', 'error');
+  }
+}
+
+async function recarregarPlanilha() {
+  const btn = document.getElementById('btn-recarregar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Recarregando...';
+  const r = await api.recarregarPlanilha();
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recarregar`;
+  if (r && !r.error) { toast('Planilha recarregada!', 'success'); loadPlanilha(); }
+  else toast(r?.error || 'Erro ao recarregar', 'error');
+}
+
+// ===================== HISTÓRICO =====================
+let historicoData = [];
+async function loadHistorico() {
+  const div = document.getElementById('historico-content');
+  div.innerHTML = skelTable(5);
+  const r = await api.getHistory();
+  if (r && !r.error && r.length > 0) {
+    historicoData = r;
+    div.innerHTML = renderHistTable(r);
+  } else if (r && r.length === 0) {
+    historicoData = [];
+    div.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="empty-title">Nenhuma consulta registrada</div></div>`;
+  } else {
+    div.innerHTML = errTable('Erro ao carregar histórico', loadHistorico);
+  }
+}
+
+function renderHistTable(data) {
+  return `<table><thead><tr><th>Data/Hora</th><th>Número</th><th>Tipo</th><th>Consulta</th><th>Status</th></tr></thead><tbody>
+  ${data.map(h=>`<tr onclick="abrirDrawerHist(${JSON.stringify(h).replace(/"/g,'&quot;')})">
+    <td>${h.createdAt ? new Date(h.createdAt).toLocaleString('pt-BR') : h.timestamp||'—'}</td>
+    <td>${h.phone||h.numero||'manual'}</td>
+    <td><span class="badge ${h.type==='op'||h.tipo==='OP'?'badge-blue':'badge-gray'}">${h.type||h.tipo||'—'}</span></td>
+    <td class="main">${h.query||h.consulta||'—'}</td>
+    <td><span class="badge ${h.found||h.encontrado?'badge-green':'badge-red'}">${h.found||h.encontrado?'Encontrado':'Não encontrado'}</span></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function filterHistorico(q) {
+  const data = historicoData.filter(h => {
+    const s = (h.query||h.consulta||'')+' '+(h.phone||h.numero||'');
+    return !q || s.toLowerCase().includes(q.toLowerCase());
+  });
+  document.getElementById('historico-content').innerHTML = renderHistTable(data);
+}
+
+// ===================== NÚMEROS =====================
+async function loadNumeros() {
+  const div = document.getElementById('numeros-content');
+  div.innerHTML = skelTable(3);
+  const r = await api.getWhitelist();
+  if (r && !r.error && r.length > 0) {
+    state.numeros = r;
+    renderNumeros(r);
+  } else if (r && r.length === 0) {
+    state.numeros = [];
+    div.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <div class="empty-title">Nenhum número autorizado ainda</div>
+      <div class="empty-sub">Adicione números para o bot começar a responder.</div>
+      <button class="btn btn-primary btn-sm" onclick="abrirModalNumero()">+ Adicionar número</button>
+    </div>`;
+  } else {
+    div.innerHTML = errTable('Erro ao carregar números', loadNumeros);
+  }
+}
+
+function renderNumeros(data) {
+  const div = document.getElementById('numeros-content');
+  div.innerHTML = `<table><thead><tr><th>Número</th><th>Nome</th><th>Perfil</th><th>Alertas</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+  ${data.map(n=>`<tr>
+    <td class="main">${n.phone||n.numero||'—'}</td>
+    <td>${n.name||n.nome||'—'}</td>
+    <td><span class="badge badge-gray">${n.profile||n.perfil||'—'}</span></td>
+    <td><span class="badge ${n.alerts||n.alertas?'badge-green':'badge-gray'}">${n.alerts||n.alertas?'Sim':'Não'}</span></td>
+    <td>
+      <div class="toggle ${n.active||n.ativo?'on':''}" onclick="toggleNumero('${n.id||n._id}', this)" style="width:28px;height:16px"></div>
+    </td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="editarNumero(${JSON.stringify(n).replace(/"/g,'&quot;')})">✏</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmarDeleteNumero('${n.id||n._id}','${n.name||n.nome||n.phone||n.numero}')">🗑</button>
+    </td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function filterNumeros(q) {
+  const data = state.numeros.filter(n =>
+    !q || (n.name||n.nome||'').toLowerCase().includes(q.toLowerCase()) || (n.phone||n.numero||'').includes(q)
+  );
+  renderNumeros(data);
+}
+
+async function toggleNumero(id, el) {
+  const r = await api.toggleNumero(id);
+  if (r && !r.error) {
+    el.classList.toggle('on');
+    toast('Status atualizado', 'success', 2000);
+  } else toast('Erro ao atualizar status', 'error');
+}
+
+function abrirModalNumero() {
+  document.getElementById('modal-numero-title').textContent = 'Adicionar Número';
+  document.getElementById('numero-phone').value = '';
+  document.getElementById('numero-nome').value = '';
+  document.getElementById('modal-numero').style.display = 'flex';
+  state._editingNumeroId = null;
+}
+
+function editarNumero(n) {
+  document.getElementById('modal-numero-title').textContent = 'Editar Número';
+  document.getElementById('numero-phone').value = n.phone||n.numero||'';
+  document.getElementById('numero-nome').value = n.name||n.nome||'';
+  document.getElementById('numero-perfil').value = n.profile||n.perfil||'Comprador';
+  document.getElementById('modal-numero').style.display = 'flex';
+  state._editingNumeroId = n.id||n._id;
+}
+
+async function salvarNumero() {
+  const btn = document.getElementById('btn-salvar-numero');
+  const d = {
+    phone: document.getElementById('numero-phone').value.trim(),
+    name: document.getElementById('numero-nome').value.trim(),
+    profile: document.getElementById('numero-perfil').value,
+    alerts: document.getElementById('t-alertas-num').classList.contains('on'),
+    permissions: {
+      material: document.getElementById('perm-material').checked,
+      op: document.getElementById('perm-op').checked,
+      relatorio: document.getElementById('perm-relatorio').checked,
+      urgente: document.getElementById('perm-urgente').checked,
+    }
+  };
+  if (!d.phone || !d.name) { toast('Preencha número e nome', 'error'); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  let r;
+  if (state._editingNumeroId) r = await api.editNumero(state._editingNumeroId, d);
+  else r = await api.addNumero(d);
+  btn.disabled = false; btn.textContent = 'Salvar';
+  if (r && !r.error) {
+    toast('Número salvo com sucesso!', 'success');
+    fecharModal('modal-numero');
+    loadNumeros();
+  } else toast(r?.error || 'Erro ao salvar número', 'error');
+}
+
+function confirmarDeleteNumero(id, nome) {
+  state.deleteTarget = id;
+  document.getElementById('modal-delete-text').textContent = `Remover "${nome}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('modal-delete').style.display = 'flex';
+}
+
+async function confirmarDelete() {
+  if (!state.deleteTarget) return;
+  const r = await api.deleteNumero(state.deleteTarget);
+  fecharModal('modal-delete');
+  if (r && !r.error) { toast('Número removido', 'success'); loadNumeros(); }
+  else toast(r?.error || 'Erro ao remover', 'error');
+  state.deleteTarget = null;
+}
+
+// ===================== TESTAR =====================
+const consoleLog = [];
+function logConsole(line, type='') {
+  const ts = new Date().toLocaleTimeString('pt-BR');
+  consoleLog.push(`[${ts}] ${line}`);
+  const div = document.getElementById('console-body');
+  div.innerHTML += `<div class="console-line"><span class="ts">[${ts}]</span> <span class="${type}">${line}</span></div>`;
+  div.scrollTop = div.scrollHeight;
+}
+
+async function sendWA(text) {
+  const input = document.getElementById('wa-input');
+  const msg = text || input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addWABubble(msg, 'user');
+  logConsole(`Mensagem recebida: "${msg}"`);
+
+  // Determine type
+  const isOP = /^op\s*\d+/i.test(msg) || /^\d{6,}$/.test(msg.replace(/\s/g,''));
+  const isUrgente = msg.startsWith('!urgente') || msg.toLowerCase() === 'urgente';
+  logConsole(`Tipo detectado: ${isOP ? 'OP' : isUrgente ? 'URGENTE' : 'MATERIAL'}`, 'type');
+
+  // Try real API first
+  let resposta = null;
+  try {
+    logConsole('Consultando backend...');
+    const r = await api.consultar(msg);
+    if (r && !r.error && r.resposta) {
+      resposta = r.resposta;
+      logConsole('Resposta recebida do backend', 'type');
+    } else if (isOP) {
+      const opCode = msg.replace(/^op\s*/i,'').trim();
+      const r2 = await api.queryOP(opCode);
+      if (r2 && !r2.error) resposta = formatOPResponse(r2);
+    } else if (!isUrgente) {
+      const r3 = await api.queryMaterial(msg);
+      if (r3 && !r3.error) resposta = formatMaterialResponse(r3);
+    }
+  } catch(e) {}
+
+  if (!resposta) {
+    resposta = isUrgente
+      ? `⚡ *!URGENTE*\n\nNenhuma falta crítica identificada no momento.\nPlanilha pode estar desatualizada.`
+      : `❌ *${msg}* não encontrado na planilha.\n\nVerifique o código e tente novamente.`;
+  }
+
+  setTimeout(() => {
+    addWABubble(resposta, 'bot');
+    logConsole(`Resposta gerada`);
+  }, 400);
+}
+
+function formatMaterialResponse(r) {
+  return `📦 *${r.codigo||r.material}*\n${r.descricao||''}\n\nEstoque: ${r.estoque??r.saldo??'—'}\nPC: ${r.pc||'—'}\nPrevisão: ${r.previsao||r.chegada||'—'}\nFornecedor: ${r.fornecedor||'—'}`;
+}
+
+function formatOPResponse(r) {
+  const mats = r.materials||r.materiais||[];
+  const lines = mats.slice(0,5).map(m=>`  • ${m.codigo||m.material}: falta ${m.falta||m.qtdFalta||'?'} un`).join('\n');
+  return `🏭 *OP ${r.op||r.opCode}*\nCliente: ${r.cliente||'—'}\nData: ${r.data||r.prazo||'—'}\n\nMateriais em falta:\n${lines||'Nenhuma falta identificada.'}`;
+}
+
+function addWABubble(text, type) {
+  const div = document.getElementById('wa-messages');
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  div.innerHTML += `<div class="wa-bubble ${type}">${text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}<div class="wa-time">${time}</div></div>`;
+  div.scrollTop = div.scrollHeight;
+}
+
+function limparConsole() {
+  consoleLog.length = 0;
+  document.getElementById('console-body').innerHTML = '<div class="console-line"><span class="ts">[sistema]</span> Console limpo.</div>';
+}
+
+function copiarConsole() {
+  navigator.clipboard.writeText(consoleLog.join('\n')).then(()=>toast('Log copiado!','success',2000));
+}
+
+// ===================== ALERTAS =====================
+async function loadAlertas() {
+  const r = await api.getAlertas();
+  const div = document.getElementById('alertas-list');
+  if (r && !r.error && r.length > 0) {
+    div.innerHTML = r.map(a=>`<div class="alert-item">
+      <div class="alert-icon ${a.severity||'info'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1"><div class="alert-text">${a.message||a.mensagem||'—'}</div><div class="alert-date">${a.createdAt?new Date(a.createdAt).toLocaleString('pt-BR'):''}</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="this.closest('.alert-item').remove();toast('Marcado como visto','success',2000)">Visto</button>
+    </div>`).join('');
+  }
+}
+
+async function salvarAlertas() {
+  const d = {
+    matinal: document.getElementById('t-matinal').classList.contains('on'),
+    pcVencido: document.getElementById('t-pc').classList.contains('on'),
+    planDesatualizada: document.getElementById('t-plan').classList.contains('on'),
+    urgente: document.getElementById('t-urgente').classList.contains('on'),
+  };
+  const r = await api.salvarAlertas(d);
+  if (r && !r.error) toast('Configurações de alerta salvas!', 'success');
+  else toast(r?.error || 'Erro ao salvar', 'error');
+}
+
+// ===================== CONFIG =====================
+function loadConfigScreen() {
+  document.getElementById('api-url-input').value = state.apiUrl;
+  document.getElementById('footer-url').textContent = state.apiUrl ? state.apiUrl.replace(/https?:\/\//, '').substring(0,20) : '(relative)';
+}
+
+function salvarUrl() {
+  const url = document.getElementById('api-url-input').value.trim();
+  if (!url) return;
+  state.apiUrl = url;
+  localStorage.setItem('api_url', url);
+  document.getElementById('footer-url').textContent = url.replace(/https?:\/\//,'').substring(0,20);
+  toast('URL salva! Recarregando status...', 'success');
+  pollStatus();
+}
+
+async function testarConexao() {
+  const btn = document.getElementById('btn-test-conn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Testando...';
+  const r = await api.ping();
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg> Testar';
+  const badge = document.getElementById('ping-result-badge');
+  if (r && !r.error) {
+    badge.innerHTML = `<span class="ping-result ok">✅ Conectado</span>`;
+    toast('Conexão OK!', 'success', 2000);
+  } else {
+    badge.innerHTML = `<span class="ping-result fail">❌ Sem resposta</span>`;
+    toast('Servidor não responde', 'error');
+  }
+}
+
+async function salvarConfig() { toast('Configurações salvas!', 'success', 2000); }
+async function salvarMensagens() { toast('Mensagens salvas!', 'success', 2000); }
+
+// ===================== TELEGRAM BOT =====================
+async function testarEvoAPI() { await pollStatus(); }
+async function configurarWebhookEvo() { toast('Bot usa long polling — webhook não necessário.', 'info', 3000); }
+function gerarQR() { toast('Bot Telegram não usa QR code.', 'info', 3000); }
+function startQRCountdown() {}
+function startQRPoll() {}
+async function desconectarWA() { toast('Bot Telegram é controlado pelo servidor.', 'info', 3000); }
+
+// ===================== DRAWERS =====================
+function abrirDrawer(html) {
+  document.getElementById('drawer-content').innerHTML = html;
+  document.getElementById('drawer-overlay').style.display = 'block';
+  document.getElementById('drawer').classList.add('open');
+}
+
+function fecharDrawer() {
+  document.getElementById('drawer-overlay').style.display = 'none';
+  document.getElementById('drawer').classList.remove('open');
+}
+
+function abrirDrawerMaterial(r) {
+  abrirDrawer(`
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px">
+      <div>
+        <div class="drawer-title">${r.material||r.codigo||'Material'}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px">${r.descricao||''}</div>
+      </div>
+      <button class="drawer-close" onclick="fecharDrawer()">✕</button>
+    </div>
+    <div class="cards-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+      <div class="card" style="cursor:default"><div class="card-label">Estoque</div><div class="card-value" style="font-size:20px">${r.estoque??r.saldoAtual??'—'}</div></div>
+      <div class="card" style="cursor:default"><div class="card-label">Falta</div><div class="card-value" style="font-size:20px;color:var(--red)">${r.falta??r.qtdFalta??'—'}</div></div>
+    </div>
+    <div class="section-title">Detalhes</div>
+    <div style="display:grid;gap:8px;font-family:var(--font-mono);font-size:12px">
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">PC</span><span>${r.pc||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">Fornecedor</span><span>${r.fornecedor||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">Previsão</span><span>${r.previsao||r.dataChegada||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">OP Crítica</span><span>${r.opCritica||r.op||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;padding-bottom:6px"><span style="color:var(--text3)">Status</span>${badgeStatus(r.status||r.criticidade)}</div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="copiarMaterialWA(${JSON.stringify(r).replace(/"/g,'&quot;')})">
+        Copiar resumo para WhatsApp
+      </button>
+    </div>
+  `);
+}
+
+function abrirDrawerOP(op) {
+  abrirDrawer(`
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px">
+      <div><div class="drawer-title">OP ${op}</div><div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">Carregando detalhes...</div></div>
+      <button class="drawer-close" onclick="fecharDrawer()">✕</button>
+    </div>
+    <div id="drawer-op-content"><div class="skel" style="height:60px;margin-bottom:8px"></div><div class="skel" style="height:40px"></div></div>
+  `);
+  api.queryOP(op).then(r => {
+    const div = document.getElementById('drawer-op-content');
+    if (!div) return;
+    if (r && !r.error) {
+      const mats = r.materials||r.materiais||[];
+      div.innerHTML = `
+        <div class="section-title">Materiais em Falta</div>
+        <table><thead><tr><th>Código</th><th>Descrição</th><th>Falta</th></tr></thead><tbody>
+        ${mats.length ? mats.map(m=>`<tr>
+          <td class="main">${m.codigo||m.material||'—'}</td>
+          <td>${truncate(m.descricao||'—',28)}</td>
+          <td style="color:var(--red)">${m.falta||m.qtdFalta||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--text3)">Nenhuma falta identificada</td></tr>'}
+        </tbody></table>`;
+    } else {
+      div.innerHTML = `<div style="color:var(--red);font-size:12px;font-family:var(--font-mono)">Erro ao carregar OP</div>`;
+    }
+  });
+}
+
+function abrirDrawerHist(h) {
+  abrirDrawer(`
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px">
+      <div><div class="drawer-title">${h.query||h.consulta||'Consulta'}</div><div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">${h.createdAt?new Date(h.createdAt).toLocaleString('pt-BR'):''}</div></div>
+      <button class="drawer-close" onclick="fecharDrawer()">✕</button>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:12px;display:grid;gap:8px">
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">Número</span><span>${h.phone||h.numero||'manual'}</span></div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px"><span style="color:var(--text3)">Tipo</span>${h.type||h.tipo||'—'}</div>
+      <div style="display:flex;justify-content:space-between;padding-bottom:6px"><span style="color:var(--text3)">Resultado</span><span>${h.found||h.encontrado?'✅ Encontrado':'❌ Não encontrado'}</span></div>
+    </div>
+    ${h.response||h.resposta ? `<div class="section-title" style="margin-top:16px">Resposta enviada</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:11px;font-family:var(--font-mono);color:var(--text2);white-space:pre-wrap">${h.response||h.resposta}</div>` : ''}
+  `);
+}
+
+function copiarMaterialWA(r) {
+  const text = `📦 *${r.material||r.codigo}* — ${r.descricao||''}\nEstoque: ${r.estoque??'—'} | Falta: ${r.falta??'—'}\nPC: ${r.pc||'—'} | Previsão: ${r.previsao||'—'}\nFornecedor: ${r.fornecedor||'—'}`;
+  navigator.clipboard.writeText(text).then(() => toast('Copiado para clipboard!', 'success', 2000));
+}
+
+// ===================== EXPORTS =====================
+function exportarExcel() {
+  if (!relatorioData.length) { toast('Nenhum dado para exportar', 'error'); return; }
+  const rows = [Object.keys(relatorioData[0]).join(',')];
+  relatorioData.forEach(r => rows.push(Object.values(r).map(v=>`"${v}"`).join(',')));
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `relatorio_faltas_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('Exportado!', 'success', 2000);
+}
+
+function copiarRelatorio() {
+  if (!relatorioData.length) { toast('Nenhum dado', 'error'); return; }
+  const text = `*Relatório de Faltas — ${new Date().toLocaleDateString('pt-BR')}*\n\n` +
+    relatorioData.slice(0,10).map(r=>`• *${r.material||r.codigo}* — ${r.descricao||''}\n  Falta: ${r.falta||'—'} | OP: ${r.opCritica||r.op||'—'}`).join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('Copiado para WhatsApp!', 'success', 2000));
+}
+
+// ===================== HELPERS =====================
+function toggleEl(el) { el.classList.toggle('on'); }
+function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function truncate(s, n) { return s && s.length > n ? s.substring(0,n)+'…' : (s||'—'); }
+
+function badgeStatus(s) {
+  if (!s) return '<span class="badge badge-gray">—</span>';
+  const sl = s.toLowerCase();
+  if (sl.includes('crit') || sl.includes('críti')) return `<span class="badge badge-red">${s}</span>`;
+  if (sl.includes('aten') || sl.includes('warn')) return `<span class="badge badge-yellow">${s}</span>`;
+  if (sl.includes('ok') || sl.includes('norm')) return `<span class="badge badge-green">${s}</span>`;
+  return `<span class="badge badge-gray">${s}</span>`;
+}
+
+function skelTable(rows) {
+  return `<table><tbody>${Array(rows).fill(0).map(()=>`<tr>${Array(5).fill(0).map(()=>`<td><div class="skel"></div></td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function errTable(msg, retry) {
+  return `<div class="empty">
+    <div class="empty-title" style="color:var(--red)">${msg}</div>
+    <button class="btn btn-secondary btn-sm" onclick="(${retry.toString()})()">Tentar novamente</button>
+  </div>`;
+}
+
+// ===================== TELEGRAM STATUS =====================
+async function testarEvoAPI() { await pollStatus(); }
+async function configurarWebhookEvo() { toast('Bot Telegram usa long polling — webhook não necessário.', 'info', 3000); }
+
+// ===================== INIT =====================
+document.getElementById('api-url-input') && (document.getElementById('api-url-input').value = state.apiUrl);
+document.getElementById('footer-url').textContent = state.apiUrl ? state.apiUrl.replace(/https?:\/\//, '').substring(0,20) : '(relative)';
+
+startPolling();
+loadDashboard();
+
+// Tab visibility: resume polling on return
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) pollStatus();
+});
+</script>
+</body>
+</html>
